@@ -22,14 +22,17 @@ public class AssestController {
     private AssetService assetService;
     private JobLauncher jobLauncher;
     private Job csvToH2Job;
+    private Job csvToH2ParallelJob;
 
     public AssestController(AssetService assetService,
                             JobLauncher jobLauncher,
-                            @Qualifier("CsvToH2_Job") Job csvToH2Job)
+                            @Qualifier("CsvToH2_Job") Job csvToH2Job,
+                            @Qualifier("CsvToH2_Parallel_Job") Job csvToH2ParallelJob)
     {
         this.assetService = assetService;
         this.jobLauncher = jobLauncher;
         this.csvToH2Job = csvToH2Job;
+        this.csvToH2ParallelJob = csvToH2ParallelJob;
     }
 
     @GetMapping(value = "/get", headers = "Accept=application/json")
@@ -47,6 +50,25 @@ public class AssestController {
         maps.put("time", new JobParameter(System.currentTimeMillis()));
         JobParameters parameters = new JobParameters(maps);
         JobExecution jobExecution = jobLauncher.run(csvToH2Job, parameters);
+
+        System.out.println("JobExecution: " + jobExecution.getStatus());
+
+
+        while (jobExecution.isRunning()) {
+            System.out.println("...");
+        }
+
+        return jobExecution.getStatus();
+    }
+
+    @GetMapping(value = "/load/csv/parallel", headers = "Accept=application/json")
+    public BatchStatus loadparallel() throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException {
+
+
+        Map<String, JobParameter> maps = new HashMap<>();
+        maps.put("time", new JobParameter(System.currentTimeMillis()));
+        JobParameters parameters = new JobParameters(maps);
+        JobExecution jobExecution = jobLauncher.run(csvToH2ParallelJob, parameters);
 
         System.out.println("JobExecution: " + jobExecution.getStatus());
 
