@@ -15,6 +15,7 @@ import org.springframework.batch.item.file.LineMapper;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -22,15 +23,16 @@ import org.springframework.core.io.ClassPathResource;
 @Configuration
 @EnableBatchProcessing
 public class SpringBatchConfiguration {
-    @Bean
+    @Bean("CsvToH2_Job")
     public Job job(JobBuilderFactory jobBuilderFactory,
                    StepBuilderFactory stepBuilderFactory,
-                   ItemReader<Asset> itemReader,
-                   ItemProcessor<Asset, Asset> itemProcessor,
-                   ItemWriter<Asset> itemWriter
-    ) {
+                   @Qualifier("CsvToH2_Reader") ItemReader<Asset> itemReader,
+                   @Qualifier("CsvToH2_Processor") ItemProcessor<Asset, Asset> itemProcessor,
+                   @Qualifier("CsvToH2_Writer") ItemWriter<Asset> itemWriter
+    )
+    {
 
-        Step step = stepBuilderFactory.get("Step_CSV_AssetLoader")
+        Step step = stepBuilderFactory.get("CsvToH2_Step")
                 .<Asset, Asset>chunk(2000)
                 .reader(itemReader)
                 .processor(itemProcessor)
@@ -38,17 +40,17 @@ public class SpringBatchConfiguration {
                 .build();
 
 
-        return jobBuilderFactory.get("Job_CSV_AssetLoader")
+        return jobBuilderFactory.get("CsvToH2_Job")
                 .incrementer(new RunIdIncrementer())
                 .start(step)
                 .build();
     }
 
-    @Bean
+    @Bean("CsvToH2_Reader")
     public FlatFileItemReader<Asset> itemReader() {
 
         FlatFileItemReader<Asset> flatFileItemReader = new FlatFileItemReader<>();
-        flatFileItemReader.setResource(new ClassPathResource("DATA_End_1L_F.csv"));
+        flatFileItemReader.setResource(new ClassPathResource("AssetData_10R.csv"));
         flatFileItemReader.setName("CSV-Reader");
         flatFileItemReader.setLinesToSkip(1);
         flatFileItemReader.setLineMapper(lineMapper());

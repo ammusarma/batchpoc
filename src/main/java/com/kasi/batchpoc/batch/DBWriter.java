@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Component
+@Component("CsvToH2_Writer")
 public class DBWriter implements ItemWriter<Asset> {
 
     private AssetRepository assetRepository;

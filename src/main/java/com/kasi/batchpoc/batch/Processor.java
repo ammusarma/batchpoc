@@ -4,7 +4,7 @@ import com.kasi.batchpoc.model.Asset;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component("CsvToH2_Processor")
 public class Processor implements ItemProcessor<Asset, Asset> {
     public Processor() {
     }
